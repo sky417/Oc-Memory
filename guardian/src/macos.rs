@@ -88,7 +88,7 @@ impl SleepPreventer {
     // macOS-specific implementations
     // =========================================================================
 
-    /// Start caffeinate process (-d: prevent display sleep, -i: prevent idle sleep)
+    /// Start caffeinate process (-d: display, -i: idle, -s: system sleep prevention)
     #[cfg(target_os = "macos")]
     async fn start_caffeinate(&mut self) -> Result<()> {
         use tokio::process::Command;
@@ -96,7 +96,7 @@ impl SleepPreventer {
         info!("Starting caffeinate to prevent sleep...");
 
         let child = Command::new("caffeinate")
-            .arg("-di") // prevent display and idle sleep
+            .arg("-dis") // prevent display, idle, and system sleep (lid close)
             .spawn()?;
 
         let pid = child.id();

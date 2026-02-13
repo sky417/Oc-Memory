@@ -282,7 +282,7 @@ OC-Guardian v{version}
 
 [macos]
 # MacBook 슬립 방지
-prevent_sleep = false  # true로 변경하여 활성화
+prevent_sleep = true  # caffeinate로 슬립 방지 (sudo 불필요)
 
 # caffeinate 사용 (sudo 불필요, 권장)
 use_caffeinate = true
