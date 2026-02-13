@@ -29,7 +29,7 @@ restart_delay = 5  # seconds
 process_alive = true
 
 # Level 2: Log activity monitoring
-log_file = "~/.openclaw/logs/chat.log"
+log_file = "~/.openclaw/logs/gateway.log"
 log_activity_timeout = 300  # 5 minutes
 log_pattern = ".*"
 
@@ -188,7 +188,7 @@ max_size = "100MB"
 max_files = 7
 
 [[logging.managed_logs.files]]
-path = "~/.openclaw/logs/chat.log"
+path = "~/.openclaw/logs/gateway.log"
 rotation = "size"
 max_size = "200MB"
 max_files = 10
