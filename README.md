@@ -40,7 +40,6 @@ OC-Guardian은 **Rust 기반**으로 제작되어, OpenClaw와 OC-Memory가 안�
 * **🚑 자동 응급처치**: 문제가 생기면 정해진 시나리오에 따라 스스로 복구하고 다시 시작해요.
 * **🧹 무한 용량 관리**: 기록(로그)이 쌓여서 컴퓨터가 느려지지 않게 자동으로 청소해요.
 * **📧 즉시 알림**: 터미널이 재시작되는 등 중요한 일이 생기면 이메일로 바로 알려줘요.
-* **🛌 잠듦 방지**: 맥북 뚜껑을 덮어도 프로그램이 종료되지 않고 계속 일할 수 있게 지켜줘요. (MacBook 슬립 방지)
 
 ---
 
@@ -92,7 +91,6 @@ OC-Guardian is built with **Rust** and acts as a 'bodyguard' system that monitor
 * **🚑 Auto Recovery**: Self-recovers and restarts according to predefined scenarios when issues occur.
 * **🧹 Unlimited Capacity Management**: Automatically cleans up logs to prevent computer slowdown.
 * **📧 Instant Notifications**: Sends email alerts immediately when critical events like terminal restarts occur.
-* **🛌 Sleep Prevention**: Keeps programs running even when MacBook lid is closed. (MacBook sleep prevention)
 
 ---
 
@@ -242,7 +240,6 @@ oc-guardian logs [process-name] --follow --tail 50
 | **Dependency-based Start** | Topological sort ensures correct startup order |
 | **Log Rotation** | Size-based with generational backups |
 | **Memory Compression** | Dual-trigger: token threshold (30K) + 24h schedule |
-| **macOS Sleep Prevention** | Automatic `caffeinate` management |
 | **Email Alerts** | SMTP notifications for crashes and recovery events |
 
 ### Run in Background
