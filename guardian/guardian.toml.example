@@ -1,0 +1,319 @@
+# OC-Guardian Configuration
+# Rust-based Process Guardian for OpenClaw + OC-Memory
+#
+# 사용법:
+#   1. 이 파일을 guardian.toml로 복사
+#   2. 경로 및 설정 확인
+#   3. 실행: ./oc-guardian start
+
+# ============================================================================
+# Process Definitions
+# ============================================================================
+
+[processes.openclaw]
+name = "openclaw"
+command = "openclaw"
+args = ["gateway"]  # ⚠️ 수정: openclaw gateway
+working_dir = "~/.openclaw"
+
+auto_restart = true
+restart_delay = 5  # seconds
+
+# Environment variables (optional)
+[processes.openclaw.env]
+# NODE_ENV = "production"
+
+# Multi-Level Health Check
+[processes.openclaw.health]
+# Level 1: Process alive check
+process_alive = true
+
+# Level 2: Log activity monitoring
+log_file = "~/.openclaw/logs/chat.log"
+log_activity_timeout = 300  # 5 minutes
+log_pattern = ".*"
+
+# Level 3: Configuration file validation
+config_file = "~/.openclaw/openclaw.json"
+validate_json = true
+auto_backup = true  # 자동 백업 생성
+
+# Level 4: Resource limits
+max_memory_mb = 2048
+max_cpu_percent = 90
+check_interval = 30
+
+# Level 5: HTTP health endpoint (optional)
+# http_endpoint = "http://localhost:18789/health"
+# http_timeout = 5
+# http_interval = 60
+
+# Ready check (의존성이 이 프로세스를 기다릴 때)
+[processes.openclaw.ready]
+method = "log"  # log | port | time
+pattern = "Server listening|ready|started"
+timeout = 60
+
+
+# ============================================================================
+# OC-Memory Process
+# ============================================================================
+
+[processes.oc-memory]
+name = "oc-memory"
+command = "python"
+args = ["memory_observer.py"]
+working_dir = "/path/to/oc-memory"  # ⚠️ 실제 경로로 변경 필요
+
+# Dependency: OpenClaw must start first
+depends_on = ["openclaw"]
+wait_for_dependency = true
+
+auto_restart = true
+restart_delay = 3
+
+[processes.oc-memory.health]
+process_alive = true
+log_file = "oc-memory.log"
+log_activity_timeout = 180  # 3 minutes
+max_memory_mb = 512
+max_cpu_percent = 50
+check_interval = 30
+
+[processes.oc-memory.ready]
+method = "log"
+pattern = "Observer started|Monitoring for file changes"
+timeout = 30
+
+
+# ============================================================================
+# Recovery Strategies
+# ============================================================================
+
+[recovery]
+# Global restart policy
+max_restarts = 5
+restart_window = 300  # 5분 내 5회 재시작 시 포기
+
+# Backoff strategy
+backoff_strategy = "exponential"
+initial_backoff = 1
+max_backoff = 60
+
+# Give up action
+give_up_action = "notify"  # notify | shutdown_all | keep_trying
+
+
+# ============================================================================
+# Recovery Scenarios
+# ============================================================================
+
+# Scenario 1: Invalid JSON configuration
+[[recovery.scenarios]]
+name = "invalid_json"
+trigger = "config_validation_failed"
+action = "restore_backup"
+backup_path = "~/.openclaw/openclaw.json.backup"
+then = "restart"
+notify = true
+
+# Scenario 2: Process crash
+[[recovery.scenarios]]
+name = "process_crash"
+trigger = "exit_code != 0"
+action = "restart_with_dependencies"
+cascade = true
+notify = true
+
+# Scenario 3: Unresponsive (log stale)
+[[recovery.scenarios]]
+name = "unresponsive"
+trigger = "log_activity_timeout"
+action = "graceful_restart"
+grace_period = 30
+notify = true
+
+# Scenario 4: Memory leak
+[[recovery.scenarios]]
+name = "memory_leak"
+trigger = "memory > max_memory_mb"
+action = "graceful_restart"
+cascade = true
+notify = true
+
+# Scenario 5: Network timeout loop
+[[recovery.scenarios]]
+name = "network_timeout"
+trigger = "restart_count > 5 in 60s"
+action = "exponential_backoff"
+max_backoff = 300
+notify = true
+
+# Scenario 6: LLM API error (로그만 기록, 재시작 안함)
+[[recovery.scenarios]]
+name = "llm_error"
+trigger = "log_pattern = 'LLM.*error|API.*failed'"
+action = "log_warning"
+notify = false
+
+
+# ============================================================================
+# Logging Configuration
+# ============================================================================
+
+[logging]
+# Main guardian log
+output = "guardian.log"
+level = "info"  # trace | debug | info | warn | error
+
+# Log rotation
+rotation = "daily"
+max_size = "50MB"
+max_files = 7
+
+# Log format
+format = "json"
+timestamp_format = "rfc3339"
+
+# Capture process stdout/stderr
+capture_stdout = true
+capture_stderr = true
+
+# Managed logs (OC-Memory 로그도 자동 로테이션)
+[[logging.managed_logs.files]]
+path = "oc-memory.log"
+rotation = "daily"
+max_size = "100MB"
+max_files = 7
+
+[[logging.managed_logs.files]]
+path = "~/.openclaw/logs/chat.log"
+rotation = "size"
+max_size = "200MB"
+max_files = 10
+
+
+# ============================================================================
+# Memory Compression Strategy (신규)
+# ============================================================================
+
+[memory.compression]
+# 메모리 압축 활성화
+enabled = true
+
+# 트리거 1: 토큰 임계값 기반
+token_threshold = 30000  # 30,000 토큰 도달 시 자동 압축
+
+# 트리거 2: 시간 기반 (1일 1회 자동 압축)
+schedule_enabled = true
+schedule = "daily"  # daily | every_12h | every_6h
+schedule_time = "03:00"  # 매일 오전 3시 (서버 부하 적은 시간)
+
+# 압축 전략
+compression_target = 0.5  # 50% 압축 목표
+min_compression_ratio = 5.0  # 최소 5배 압축
+
+# 압축 대상 파일
+target_files = [
+    "~/.openclaw/workspace/memory/active_memory.md",
+    "oc-memory.log"
+]
+
+# 압축 방법
+method = "llm"  # llm | gzip
+llm_model = "gemini-2.5-flash"  # Observer/Reflector 모델
+llm_api_key_env = "GOOGLE_API_KEY"  # 환경 변수에서 읽기
+
+# 압축 실패 시 재시도
+max_retries = 3
+retry_delay = 5  # seconds
+
+# 압축 결과 로그
+log_compression_stats = true
+
+
+# ============================================================================
+# Notifications
+# ============================================================================
+
+[notifications]
+enabled = false  # true로 변경하여 활성화
+
+# Email notifications
+[notifications.email]
+smtp_server = "smtp.gmail.com"
+smtp_port = 587
+smtp_tls = true
+smtp_user = "your-email@gmail.com"
+smtp_password_env = "SMTP_PASSWORD"  # 환경 변수에서 읽기
+from = "guardian@example.com"
+to = ["admin@example.com"]
+
+# 알림 이벤트
+events = [
+    "crash",
+    "give_up",
+    "config_error",
+    "memory_leak"
+]
+
+# Email template
+[notifications.email.template]
+subject = "[OC-Guardian] {event_type} - {process_name}"
+body = """
+OC-Guardian Alert
+
+Event: {event_type}
+Process: {process_name}
+Time: {timestamp}
+Details: {details}
+
+Action Taken: {action}
+
+---
+OC-Guardian v{version}
+"""
+
+
+# ============================================================================
+# macOS Settings
+# ============================================================================
+
+[macos]
+# MacBook 슬립 방지
+prevent_sleep = false  # true로 변경하여 활성화
+
+# caffeinate 사용 (sudo 불필요, 권장)
+use_caffeinate = true
+
+# 또는 pmset 사용 (sudo 필요)
+# use_caffeinate = false
+# prevent_sleep_command = "sudo pmset -c disablesleep 1"
+# restore_sleep_command = "sudo pmset -c disablesleep 0"
+
+# Guardian 종료 시 슬립 설정 복원
+restore_sleep_on_exit = true
+
+
+# ============================================================================
+# Advanced Settings
+# ============================================================================
+
+[advanced]
+# Supervisor check interval
+supervisor_interval = 5  # seconds
+
+# Process spawn timeout
+spawn_timeout = 30
+
+# Shutdown grace period
+shutdown_grace_period = 60
+
+# PID file
+pid_file = "guardian.pid"
+
+# Service installation (Linux/macOS)
+[advanced.service]
+# systemd (Linux) or LaunchAgent (macOS)
+auto_install = false
+start_on_boot = false

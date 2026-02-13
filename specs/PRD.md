@@ -896,7 +896,7 @@ MVP 출시에 필수적인 기능입니다. 이 기능들이 없으면 제품이
 
 ### 5.1 Log Monitoring Module (로그 모니터링 모듈)
 
-**컴포넌트**: `LogWatcher`
+**컴포넌트**: `FileWatcher`
 
 **기능**:
 - 구성 가능한 간격(기본값: 1초)으로 로그 파일 폴링
@@ -908,7 +908,7 @@ MVP 출시에 필수적인 기능입니다. 이 기능들이 없으면 제품이
 
 **인터페이스**:
 ```python
-class LogWatcher:
+class FileWatcher:
     def __init__(log_path: str, state_path: str)
     def get_new_lines() -> Tuple[List[str], int]
     def tail(callback: callable, interval: float)
@@ -1280,7 +1280,7 @@ class Observation:
   "category": "preference",
   "content": "사용자가 백엔드 개발에 JavaScript보다 TypeScript를 선호한다고 언급함",
   "metadata": {
-    "source_file": "~/.openclaw/logs/chat.log",
+    "source_file": "~/.openclaw/agents/main/sessions/*.jsonl",
     "thread_id": "thread_abc123",
     "confidence": 0.95
   },
@@ -2194,7 +2194,7 @@ curl -X POST http://localhost:18789/hooks/agent \
 **호환성 변경 사항**: OpenClaw가 로그 형식 또는 파일 위치를 변경하는 경우 `config.yaml` 업데이트:
 ```yaml
 logs:
-  path: ~/.openclaw/logs/chat.log  # 위치가 변경되면 업데이트
+  path: ~/.openclaw/agents/main/sessions/  # Session Transcripts (JSONL)
   format: regex                     # regex | json
   user_pattern: '^\[.*?\] USER: (.+)$'
   assistant_pattern: '^\[.*?\] ASSISTANT: (.+)$'
@@ -2573,7 +2573,7 @@ setup:
 
 #### AC-P0-001: Log Monitoring (로그 모니터링)
 
-**조건**: OpenClaw가 `chat.log`에 대화를 적극적으로 로깅하고 있음
+**조건**: OpenClaw가 Session Transcript에 대화를 적극적으로 로깅하고 있음
 **실행**: OC-Memory 데몬이 실행 중
 **결과**:
 - ✅ 새 로그 항목이 1초 이내에 감지됨
@@ -2586,7 +2586,7 @@ setup:
 1. OC-Memory 데몬 시작
 2. OpenClaw에서 100개의 테스트 대화 생성
 3. 100개의 대화가 모두 감지되었는지 확인
-4. 로그 파일 로테이션 (mv chat.log chat.log.1)
+4. 세션 파일 로테이션
 5. 50개의 대화 추가 생성
 6. 50개의 새 대화가 모두 감지되었는지 확인
 ```
@@ -2866,7 +2866,7 @@ API 장애:
 **목표**: 기본 메모리 작동을 위한 핵심 기능
 
 **제공 결과물**:
-- ✅ 로그 모니터링 시스템 (LogWatcher)
+- ✅ 디렉토리 감시 시스템 (FileWatcher)
 - ✅ 관찰자 에이전트 통합
 - ✅ 기본 관찰 저장소 (인메모리)
 - ✅ 활성 메모리 파일 생성

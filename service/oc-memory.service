@@ -1,0 +1,28 @@
+[Unit]
+Description=OC-Memory Observer Daemon
+Documentation=https://github.com/openclaw-ai/oc-memory
+After=network.target
+
+[Service]
+Type=simple
+User=%i
+ExecStart=/usr/bin/python3 /usr/local/share/oc-memory/memory_observer.py
+WorkingDirectory=/usr/local/share/oc-memory
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=oc-memory
+
+# Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/%i/.openclaw
+
+# Environment
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target

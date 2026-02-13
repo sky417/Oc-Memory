@@ -1,0 +1,24 @@
+[Unit]
+Description=OC-Guardian Process Manager
+Documentation=https://github.com/openclaw-ai/oc-memory
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/oc-guardian start --config /etc/oc-guardian/guardian.toml
+ExecStop=/usr/local/bin/oc-guardian stop --config /etc/oc-guardian/guardian.toml
+WorkingDirectory=/etc/oc-guardian
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=oc-guardian
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/log/oc-guardian /etc/oc-guardian
+
+[Install]
+WantedBy=multi-user.target

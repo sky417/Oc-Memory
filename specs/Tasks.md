@@ -26,7 +26,7 @@ Core Memory System        Semantic Search         Cloud Integration     Producti
 
 | Phase | Duration | Goal | Deliverables |
 |-------|----------|------|--------------|
-| **Phase 1: MVP** | 4주 | 기본 관찰 메모리 동작 | LogWatcher, Observer, active_memory.md, OpenClaw 연동 |
+| **Phase 1: MVP** | 4주 | 기본 관찰 메모리 동작 | FileWatcher, Observer, active_memory.md, OpenClaw 연동 |
 | **Phase 2: Enhanced** | 3주 | 의미 검색 및 수명 관리 | ChromaDB, Semantic Search, TTL Manager |
 | **Phase 3: Obsidian** | 2주 | 클라우드 백업 연동 | Obsidian CLI, Dropbox Sync, 역방향 조회 |
 | **Phase 4: Production** | 2주 | 프로덕션 준비 | 벤치마크, 최적화, 문서화, CI/CD |
@@ -250,7 +250,7 @@ Core Memory System        Semantic Search         Cloud Integration     Producti
   - Dependencies: None
   - Estimated Hours: 2h
 
-- **Task 1.2.1.2**: AGENTS.md 수정
+- **Task 1.2.1.2**: openclaw.json 설정
   - Priority: P0
   - Story Points: 1
   - Dependencies: Task 1.2.1.1
@@ -1517,7 +1517,7 @@ Core Memory System        Semantic Search         Cloud Integration     Producti
 **Goal**: 핵심 파이프라인 구축 및 설치 마법사
 
 **Deliverables**:
-- [ ] LogWatcher 동작
+- [x] FileWatcher 동작
 - [ ] Observer 동작
 - [ ] active_memory.md 생성
 - [ ] Setup Wizard 완성
@@ -1716,7 +1716,7 @@ pip install -r requirements.txt
 #### Unit Tests
 ```
 tests/
-├── test_watcher.py          # LogWatcher tests
+├── test_watcher.py          # FileWatcher tests
 ├── test_observer.py         # Observer tests
 ├── test_reflector.py        # Reflector tests
 ├── test_merger.py           # MemoryMerger tests
@@ -1966,7 +1966,7 @@ M4: Production Release (Week 11)
 ### 12.2 Critical Path
 
 ```
-LogWatcher → Observer → MemoryMerger → OpenClaw Integration
+FileWatcher → Observer → MemoryMerger → OpenClaw Integration
                 ↓
            ChromaDB → Reflector → TTL Manager
                                       ↓

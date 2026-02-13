@@ -560,7 +560,7 @@ metrics_collection:
 
 ✅ **Valid Assumptions**:
 - OpenClaw는 로그 파일을 생성한다 (`~/.openclaw/logs/*.log`)
-- OpenClaw는 System Prompt를 읽는다 (AGENTS.md, SOUL.md 등)
+- OpenClaw는 System Prompt를 읽는다 (openclaw.json, Plugin Hooks 등)
 - LLM API는 안정적으로 작동한다 (Google, OpenAI 등)
 - ChromaDB는 로컬에서 안정적으로 작동한다
 
@@ -685,7 +685,7 @@ OC-Memory의 Observer와 Reflector는 **중급 수준의 LLM**으로 충분히 �
 #### Phase 1: MVP (6주, 2026-02-12 ~ 2026-03-31)
 
 ✅ **Core Features**:
-- [ ] LogWatcher: 로그 파일 실시간 감시 (Tail 기반)
+- [x] FileWatcher: 디렉토리 파일 변경 감시 (watchdog 기반)
 - [ ] Observer: 로그 분석 및 Observation 생성 (LLM)
 - [ ] MemoryMerger: active_memory.md 파일 생성/업데이트
 - [ ] TokenCounter: 토큰 계산 (tiktoken)

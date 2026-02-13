@@ -1,0 +1,38 @@
+[package]
+name = "oc-guardian"
+version = "0.1.0"
+edition = "2021"
+description = "OpenClaw Process Guardian - Rust-based process supervisor for OpenClaw + OC-Memory"
+license = "MIT"
+authors = ["OC-Memory Team"]
+
+[[bin]]
+name = "oc-guardian"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+clap = { version = "4.4", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
+sysinfo = "0.30"
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde", "clock"] }
+regex = "1.10"
+serde_json = "1.0"
+miniz_oxide = "0.7"
+comfy-table = "7.1"
+colored = "2.1"
+
+[dev-dependencies]
+tempfile = "3.9"
+tokio-test = "0.4"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
